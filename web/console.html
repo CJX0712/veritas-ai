@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Veritas AI 控制台</title>
+<script>
+(function(){var t=localStorage.getItem('veritas.theme');
+if(t!=='light'&&t!=='dark'){t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}
+document.documentElement.setAttribute('data-theme',t);})();
+</script>
+<style>
+:root{color-scheme:light dark;
+--font-sans:"Inter","SF Pro Text",-apple-system,BlinkMacSystemFont,"Segoe UI Variable Text","Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei UI","Source Han Sans SC","Noto Sans CJK SC",sans-serif;
+--font-mono:"JetBrains Mono","SF Mono","Cascadia Mono","Menlo","Consolas",monospace;
+--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-6:24px;--space-8:32px;
+--radius-xs:3px;--radius-sm:6px;--radius-md:8px;--radius-pill:999px;
+--dur-fast:140ms;--dur-base:200ms;--ease:cubic-bezier(0.2,0,0,1);
+--nav-w:56px;--header-h:48px;--inspector-w:360px;}
+:root,:root[data-theme="light"]{
+--bg:#F6F7F9;--surface:#FFFFFF;--surface-2:#F0F2F5;--surface-sunken:#EDEFF3;
+--text-primary:#10151C;--text-secondary:#525B69;--text-tertiary:#6A7480;
+--border:#DFE3E9;--border-strong:#C4CAD3;
+--accent:#0B62D6;--accent-hover:#0954B8;--accent-subtle:#E8F1FE;--accent-on:#FFFFFF;
+--success:#157F3D;--success-subtle:#E6F5EC;
+--warning:#9A6100;--warning-subtle:#FDF3E2;
+--danger:#C4342B;--danger-subtle:#FCEDEC;
+--degraded:#B25E00;--degraded-subtle:#FDF1E0;
+--focus-ring:0 0 0 2px var(--surface),0 0 0 4px rgba(11,98,214,.45);}
+:root[data-theme="dark"]{
+--bg:#0C1015;--surface:#141A21;--surface-2:#1B222B;--surface-sunken:#0A0D11;
+--text-primary:#E7ECF2;--text-secondary:#A2AEBD;--text-tertiary:#7C8A9A;
+--border:#232C36;--border-strong:#33404E;
+--accent:#4DA3FF;--accent-hover:#6FB4FF;--accent-subtle:#12253D;--accent-on:#08121E;
+--success:#3FBF6E;--success-subtle:#10281B;
+--warning:#E8A33D;--warning-subtle:#2A1F10;
+--danger:#F0655A;--danger-subtle:#2E1513;
+--degraded:#F2B03C;--degraded-subtle:#2A1E0E;
+--focus-ring:0 0 0 2px var(--surface),0 0 0 4px rgba(77,163,255,.55);}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text-primary);font-family:var(--font-sans);
+font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.num,.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
+::selection{background:var(--accent-subtle)}
+.icon{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5;
+stroke-linecap:round;stroke-linejoin:round;flex:none}
+.icon--lg{width:20px;height:20px}
+.app{display:grid;grid-template-columns:var(--nav-w) 1fr;min-height:100vh}
+.nav{background:var(--surface);border-right:1px solid var(--border);display:flex;
+flex-direction:column;align-items:center;padding:var(--space-3) 0;gap:var(--space-1);
+position:sticky;top:0;height:100vh}
+.nav .logo{font-weight:600;color:var(--accent);font-size:15px;margin-bottom:var(--space-3);
+font-family:var(--font-mono)}
+.nav button{width:40px;height:40px;border:none;background:none;border-radius:var(--radius-sm);
+color:var(--text-secondary);cursor:pointer;display:grid;place-items:center;position:relative;
+transition:background var(--dur-fast) var(--ease),color var(--dur-fast) var(--ease)}
+.nav button:hover{background:var(--surface-2);color:var(--text-primary)}
+.nav button.active{background:var(--accent-subtle);color:var(--accent)}
+.nav button.active::before{content:"";position:absolute;left:-8px;top:8px;bottom:8px;width:2px;
+background:var(--accent);border-radius:1px}
+.nav .spacer{flex:1}
+.main{min-width:0;display:flex;flex-direction:column}
+.header{height:var(--header-h);display:flex;align-items:center;gap:var(--space-3);
+padding:0 var(--space-6);background:var(--surface);border-bottom:1px solid var(--border);
+position:sticky;top:0;z-index:10}
+.header h1{font-size:14px;font-weight:600;margin:0}
+.header .env{font-size:12px;color:var(--text-tertiary)}
+.header .right{margin-left:auto;display:flex;gap:var(--space-2);align-items:center}
+.chip{font-size:11px;padding:2px 8px;border-radius:var(--radius-pill);display:inline-flex;
+align-items:center;gap:4px;font-family:var(--font-mono)}
+.chip--ok{background:var(--success-subtle);color:var(--success)}
+.chip--warn{background:var(--warning-subtle);color:var(--warning)}
+.chip--bad{background:var(--danger-subtle);color:var(--danger)}
+.chip--deg{background:var(--degraded-subtle);color:var(--degraded)}
+.content{padding:var(--space-6);max-width:1440px;width:100%;margin:0 auto;flex:1}
+.split{display:grid;grid-template-columns:1fr var(--inspector-w);gap:var(--space-6)}
+@media(max-width:1023px){.split{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md)}
+.panel .ph{padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--border);
+font-size:12px;color:var(--text-secondary);font-weight:500;letter-spacing:.01em;
+display:flex;align-items:center;gap:var(--space-2)}
+.panel .pb{padding:var(--space-4)}
+button.btn{border:1px solid var(--border-strong);background:var(--surface);color:var(--text-primary);
+border-radius:var(--radius-sm);padding:6px 14px;font-size:14px;cursor:pointer;display:inline-flex;
+align-items:center;gap:6px;transition:background var(--dur-fast) var(--ease)}
+button.btn:hover{background:var(--surface-2)}
+button.btn--primary{background:var(--accent);border-color:var(--accent);color:var(--accent-on)}
+button.btn--primary:hover{background:var(--accent-hover)}
+textarea,input[type=text]{width:100%;background:var(--surface);color:var(--text-primary);
+border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:10px 12px;
+font-family:var(--font-sans);font-size:14px;resize:vertical}
+textarea:focus,input:focus{border-color:var(--accent)}
+.msg{padding:var(--space-3) 0;border-bottom:1px solid var(--border)}
+.msg:last-child{border-bottom:none}
+.msg .who{font-size:11px;color:var(--text-tertiary);letter-spacing:.08em;text-transform:uppercase}
+.msg .body{margin-top:var(--space-2);font-size:15px;line-height:1.75}
+.cite{color:var(--accent);font-size:11px;vertical-align:super;cursor:pointer;font-family:var(--font-mono)}
+.meta{display:flex;flex-wrap:wrap;gap:var(--space-2);margin-top:var(--space-3);
+padding-top:var(--space-3);border-top:1px solid var(--border);font-size:12px;color:var(--text-secondary)}
+.degraded-bar{background:var(--degraded-subtle);border-left:2px solid var(--degraded);
+padding:var(--space-2) var(--space-3);margin-top:var(--space-3);font-size:13px;color:var(--text-primary)}
+.quote{border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--space-3);
+margin-bottom:var(--space-2);cursor:pointer;transition:border-color var(--dur-fast) var(--ease)}
+.quote:hover{border-color:var(--accent)}
+.quote .q-src{font-size:12px;color:var(--text-secondary);font-weight:500}
+.quote .q-sim{font-size:12px;color:var(--text-tertiary);font-family:var(--font-mono)}
+.quote .q-txt{font-size:13px;margin-top:var(--space-2);color:var(--text-primary)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:12px;color:var(--text-tertiary);font-weight:500;
+padding:var(--space-2) var(--space-3);border-bottom:1px solid var(--border);letter-spacing:.01em}
+td{padding:var(--space-2) var(--space-3);border-bottom:1px solid var(--border)}
+tr:last-child td{border-bottom:none}
+tr.clickable{cursor:pointer}tr.clickable:hover{background:var(--surface-2)}
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr)}
+.metric{padding:var(--space-4);border-right:1px solid var(--border)}
+.metric:last-child{border-right:none}
+.metric .m-label{font-size:12px;color:var(--text-tertiary)}
+.metric .m-value{font-size:28px;font-weight:600;margin-top:4px;font-family:var(--font-mono)}
+.metric .m-delta{font-size:12px;margin-top:2px;font-family:var(--font-mono)}
+.m-delta.up{color:var(--success)}.m-delta.down{color:var(--danger)}.m-delta.flat{color:var(--text-tertiary)}
+.bar-row{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-2) 0}
+.bar-row .b-label{width:170px;font-size:12px;color:var(--text-secondary);font-family:var(--font-mono)}
+.bar-row .b-track{flex:1;height:14px;background:var(--surface-2);border-radius:var(--radius-xs);overflow:hidden}
+.bar-row .b-fill{height:100%;background:var(--accent)}
+.bar-row .b-num{width:40px;text-align:right;font-family:var(--font-mono);font-size:12px}
+.inv{display:flex;align-items:flex-start;gap:var(--space-3);padding:var(--space-2) var(--space-3);
+border-bottom:1px solid var(--border);font-size:13px}
+.inv:last-child{border-bottom:none}
+.inv .i-id{font-family:var(--font-mono);font-size:12px;width:110px;color:var(--text-secondary)}
+.inv .i-name{flex:1}
+.inv .i-st{font-family:var(--font-mono);font-size:12px}
+.inv--fail{background:var(--danger-subtle)}
+.st-pass{color:var(--success)}.st-fail{color:var(--danger)}.st-skip{color:var(--text-tertiary)}
+.tree{font-family:var(--font-mono);font-size:12px}
+.tree .t-row{display:flex;align-items:center;gap:var(--space-2);padding:3px 0}
+.tree .t-bar{height:10px;border-radius:2px;min-width:2px}
+.tree .t-name{width:180px;color:var(--text-primary)}
+.tree .t-ms{width:80px;text-align:right;color:var(--text-tertiary)}
+.empty{padding:var(--space-8);text-align:center;color:var(--text-secondary);font-size:14px}
+.empty .e-title{font-size:16px;font-weight:600;color:var(--text-primary);margin-bottom:var(--space-2)}
+.hint{font-size:12px;color:var(--text-tertiary);margin-top:var(--space-2)}
+.err-banner{background:var(--danger-subtle);border-left:2px solid var(--danger);
+padding:var(--space-3) var(--space-4);border-radius:var(--radius-sm);color:var(--text-primary);font-size:13px}
+.skeleton{background:linear-gradient(var(--surface-2),var(--surface));min-height:80px;
+border-radius:var(--radius-sm);animation:breathe 1.2s linear infinite}
+@keyframes breathe{0%,100%{opacity:.6}50%{opacity:1}}
+.spin{animation:spin 900ms linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+.tabs{display:flex;gap:var(--space-1);margin-bottom:var(--space-4)}
+.tabs button{border:none;background:none;padding:6px 12px;border-radius:var(--radius-sm);
+color:var(--text-secondary);cursor:pointer;font-size:14px}
+.tabs button.active{background:var(--accent-subtle);color:var(--accent);font-weight:500}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden"><defs>
+<symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+<symbol id="i-trace" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path d="M9 19h4.5a3.5 3.5 0 0 0 0-7h-5a3.5 3.5 0 0 1 0-7H15"/></symbol>
+<symbol id="i-guard" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></symbol>
+<symbol id="i-evolve" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></symbol>
+<symbol id="i-eval" viewBox="0 0 24 24"><path d="M10 2v7.31"/><path d="M14 9.3V1.99"/><path d="M8.5 2h7"/><path d="M14 9.3a6.5 6.5 0 1 1-4 0"/><path d="M5.52 16h12.96"/></symbol>
+<symbol id="i-pass" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+<symbol id="i-fail" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></symbol>
+<symbol id="i-warn" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+</defs></svg>
+
+<div class="app">
+<nav class="nav">
+  <div class="logo">VT</div>
+  <button data-page="chat" class="active" title="问答" aria-label="问答"><svg class="icon icon--lg"><use href="#i-chat"/></svg></button>
+  <button data-page="trace" title="链路" aria-label="链路"><svg class="icon icon--lg"><use href="#i-trace"/></svg></button>
+  <button data-page="guard" title="守卫" aria-label="守卫"><svg class="icon icon--lg"><use href="#i-guard"/></svg></button>
+  <button data-page="evolve" title="进化" aria-label="进化"><svg class="icon icon--lg"><use href="#i-evolve"/></svg></button>
+  <button data-page="eval" title="评测" aria-label="评测"><svg class="icon icon--lg"><use href="#i-eval"/></svg></button>
+  <div class="spacer"></div>
+  <button id="theme-btn" title="切换主题" aria-label="切换主题"><svg class="icon icon--lg"><use href="#i-moon"/></svg></button>
+</nav>
+<div class="main">
+<header class="header">
+  <h1>Veritas AI 控制台</h1>
+  <span class="env" id="health-env"></span>
+  <div class="right"><span id="health-chip"></span></div>
+</header>
+<div class="content">
+
+<section id="page-chat">
+  <div class="split">
+    <div class="panel">
+      <div class="ph">对话问答</div>
+      <div class="pb">
+        <div id="msgs"><div class="empty"><div class="e-title">还没有会话</div>
+          输入问题开始提问。系统会先做混合检索，答案逐句绑定证据来源。</div></div>
+        <div style="margin-top:var(--space-4)">
+          <textarea id="q-input" rows="2" placeholder="输入你的问题…" aria-label="问题输入"></textarea>
+          <div style="display:flex;justify-content:flex-end;margin-top:var(--space-2);gap:8px">
+            <button class="btn btn--primary" id="ask-btn"><svg class="icon"><use href="#i-send"/></svg>发送</button>
+          </div>
+          <div class="hint">Enter 提问 · Shift+Enter 换行</div>
+        </div>
+      </div>
+    </div>
+    <div class="panel"><div class="ph">检索证据</div><div class="pb" id="cites">
+      <div class="empty">提问后，命中的知识库片段会显示在这里，含相似度与来源。</div></div></div>
+  </div>
+</section>
+
+<section id="page-trace" class="hidden">
+  <div class="panel"><div class="ph">Trace 链路 <span id="trace-id" class="mono" style="margin-left:auto"></span></div>
+    <div class="pb" id="trace-body"><div class="empty"><div class="e-title">尚无链路数据</div>
+      在问答页提问后，M02 到 M11 的逐段耗时与状态会以瀑布图呈现。</div></div></div>
+</section>
+
+<section id="page-guard" class="hidden">
+  <div class="panel"><div class="ph">不变量守卫
+    <span style="margin-left:auto;display:flex;gap:8px">
+      <button class="btn" id="verify-btn">立即全量校验</button></span></div>
+    <div class="pb" id="guard-body"><div class="empty"><div class="e-title">尚未运行校验</div>
+      不变量在每次回答结束时自动执行；也可立即手动触发全量校验。</div></div></div>
+</section>
+
+<section id="page-evolve" class="hidden">
+  <div class="panel"><div class="ph">自进化回路 · 错误家族分布</div>
+    <div class="pb" id="evolve-dist"><div class="empty"><div class="e-title">近况良好</div>
+      没有触发自进化回路——所有回答均通过了不变量校验。</div></div></div>
+  <div class="panel" style="margin-top:var(--space-4)"><div class="ph">修复记录</div>
+    <div class="pb" id="evolve-eps"><div class="empty">暂无修复记录。</div></div></div>
+</section>
+
+<section id="page-eval" class="hidden">
+  <div class="panel"><div class="ph">评测 · golden 集
+    <span style="margin-left:auto"><button class="btn btn--primary" id="eval-btn">运行评测</button></span></div>
+    <div id="eval-metrics"></div>
+    <div class="pb" id="eval-note"></div></div>
+</section>
+
+</div>
+</div>
+</div>
+
+<script>
+"use strict";
+const API = "http://127.0.0.1:8000";
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c =>
+  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let lastTraceId = null;
+
+// ---------- theme ----------
+$("#theme-btn").addEventListener("click", () => {
+  const cur = document.documentElement.getAttribute("data-theme");
+  const next = cur === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  localStorage.setItem("veritas.theme", next);
+  $("#theme-btn use").setAttribute("href", next === "dark" ? "#i-sun" : "#i-moon");
+});
+$("#theme-btn use").setAttribute("href",
+  document.documentElement.getAttribute("data-theme") === "dark" ? "#i-sun" : "#i-moon");
+
+// ---------- nav ----------
+document.querySelectorAll(".nav button[data-page]").forEach(btn => {
+  btn.addEventListener("click", () => showPage(btn.dataset.page));
+});
+function showPage(name) {
+  document.querySelectorAll(".nav button[data-page]").forEach(b =>
+    b.classList.toggle("active", b.dataset.page === name));
+  ["chat","trace","guard","evolve","eval"].forEach(p =>
+    $("#page-" + p).classList.toggle("hidden", p !== name));
+  if (name === "trace") loadTrace();
+  if (name === "guard") loadGuard();
+  if (name === "evolve") loadEvolve();
+  if (name === "eval") { /* manual trigger */ }
+}
+
+// ---------- health ----------
+async function loadHealth() {
+  try {
+    const r = await fetch(API + "/health");
+    const h = await r.json();
+    $("#health-env").textContent = "本地 · " + h.track + " · " + h.llm;
+    $("#health-chip").innerHTML = '<span class="chip chip--ok">已连接 · '
+      + h.chunks + ' chunks</span>';
+  } catch (e) {
+    $("#health-env").textContent = "";
+    $("#health-chip").innerHTML = '<span class="chip chip--bad">后端未启动</span>';
+  }
+}
+loadHealth(); setInterval(loadHealth, 10000);
+
+// ---------- chat ----------
+$("#q-input").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ask(); }
+});
+$("#ask-btn").addEventListener("click", ask);
+async function ask() {
+  const q = $("#q-input").value.trim();
+  if (!q) return;
+  $("#q-input").value = "";
+  const msgs = $("#msgs");
+  if (msgs.querySelector(".empty")) msgs.innerHTML = "";
+  msgs.insertAdjacentHTML("beforeend",
+    '<div class="msg"><div class="who">问题</div><div class="body">' + esc(q) + '</div></div>');
+  msgs.insertAdjacentHTML("beforeend",
+    '<div class="msg" id="loading"><div class="who">推理中</div><div class="body">'
+    + '<svg class="icon spin" style="width:14px;height:14px"><use href="#i-evolve"/></svg> '
+    + '检索与生成中（本地 CPU 模型，通常 2-10 秒）…</div></div>');
+  msgs.scrollIntoView({ block: "end" });
+  try {
+    const r = await fetch(API + "/api/v1/query", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: q }),
+    });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const data = await r.json();
+    $("#loading").remove();
+    renderAnswer(data.answer, data.repaired, data.family);
+    lastTraceId = data.answer.trace_id;
+  } catch (e) {
+    $("#loading").innerHTML = '<div class="err-banner">无法连接到 Veritas 运行时：'
+      + esc(e.message) + '。请确认后端已启动（uvicorn veritas.app:app --port 8000）。'
+      + '<button class="btn" style="margin-left:8px" onclick="location.reload()">重试</button></div>';
+  }
+}
+function renderAnswer(a, repaired, family) {
+  let html = '<div class="msg"><div class="who">答案 · ' + esc(a.model) + '</div><div class="body">';
+  if (a.refused) {
+    html += '<div class="degraded-bar" style="border-left-color:var(--warning)">'
+      + '知识库中未找到可靠依据，已停止生成答案。'
+      + (a.citations.length ? "最接近的检索结果见右侧，供你判断。" : "")
+      + '</div>';
+  } else {
+    a.assertions.forEach(t => {
+      html += esc(t.text);
+      if (t.citation_index) html += ' <span class="cite">[' + t.citation_index + ']</span>';
+      html += "<br>";
+    });
+  }
+  html += "</div>";
+  const passN = a.invariants.filter(i => i.passed).length;
+  const failN = a.invariants.length - passN;
+  html += '<div class="meta">'
+    + '<span>' + (a.route ? "路由 " + esc(a.route.tier) + " · " : "") + '</span>'
+    + '<span class="num">' + a.total_ms + ' ms</span>'
+    + '<span>不变量 ' + passN + '/' + a.invariants.length + ' 通过'
+    + (failN ? ' · <span class="st-fail">' + failN + ' 失败</span>' : '') + '</span>'
+    + (repaired ? '<span class="chip chip--deg">已修复 ' + esc(family || "") + '</span>' : '')
+    + (a.removed_count ? '<span class="chip chip--warn">已移除 ' + a.removed_count + ' 条无可靠依据内容</span>' : '')
+    + '</div></div>';
+  $("#msgs").insertAdjacentHTML("beforeend", html);
+  const cites = $("#cites");
+  if (!a.citations.length) {
+    cites.innerHTML = '<div class="empty">本次无检索证据。</div>';
+  } else {
+    cites.innerHTML = a.citations.map(c =>
+      '<div class="quote"><div class="q-src">[' + c.index + '] ' + esc(c.doc_id)
+      + ' · ' + esc(c.section) + '</div><div class="q-sim num">相似度 '
+      + c.score.toFixed(4) + '</div><div class="q-txt">' + esc(c.snippet) + '</div></div>').join("");
+  }
+}
+
+// ---------- trace ----------
+async function loadTrace() {
+  const body = $("#trace-body");
+  if (!lastTraceId) return;
+  try {
+    const r = await fetch(API + "/api/v1/traces/" + lastTraceId);
+    if (!r.ok) throw 0;
+    const t = await r.json();
+    $("#trace-id").textContent = t.trace_id;
+    const spans = (t.flat || []).filter(s => s.name !== "request");
+    const total = Math.max(t.total_ms, 1);
+    const colors = { m09_router: "var(--cat-m09,#7B8CE0)", m05_retriever: "var(--success)",
+      m08_reasoner: "var(--accent)", m10_guardian: "var(--warning)", m06_memory: "var(--text-tertiary)" };
+    body.innerHTML = '<div class="tree">' + spans.map(s => {
+      const dur = (s.attrs && s.attrs.duration_ms) || 0;
+      const pct = Math.max(dur / total * 100, 1.5);
+      const color = s.status === "failed" ? "var(--danger)" : (colors[s.module] || "var(--accent)");
+      return '<div class="t-row"><span class="t-name">' + esc(s.name)
+        + '</span><div class="t-bar" style="width:' + pct + '%;background:' + color + '"></div>'
+        + '<span class="t-ms">' + dur.toFixed(1) + ' ms</span>'
+        + (s.status === "failed" ? '<span class="st-fail">失败</span>' : '<span class="st-pass">通过</span>')
+        + '</div>';
+    }).join("") + '</div><div class="hint">总耗时 ' + t.total_ms + ' ms · 条形长度为耗时占比</div>';
+  } catch (e) { body.innerHTML = '<div class="empty">链路数据加载失败。</div>'; }
+}
+
+// ---------- guard ----------
+$("#verify-btn").addEventListener("click", loadGuard);
+async function loadGuard() {
+  const body = $("#guard-body");
+  body.innerHTML = '<div class="skeleton"></div>';
+  try {
+    const r = await fetch(API + "/api/v1/invariants/verify", { method: "POST" });
+    const list = await r.json();
+    if (!list.length) { body.innerHTML = '<div class="empty">未注册任何不变量。</div>'; return; }
+    const passN = list.filter(i => i.passed).length;
+    body.innerHTML = '<div style="margin-bottom:var(--space-3);font-size:13px">'
+      + '通过 ' + passN + ' · 失败 ' + (list.length - passN) + ' · 共 ' + list.length + ' 条</div>'
+      + list.map(i => '<div class="inv' + (i.passed ? "" : " inv--fail") + '">'
+        + '<span class="i-id">' + esc(i.invariant_id) + '</span>'
+        + '<span class="i-name">' + esc(i.name)
+        + (i.detail ? ' <span class="hint">' + esc(i.detail) + '</span>' : "") + '</span>'
+        + '<span class="i-st ' + (i.passed ? "st-pass" : "st-fail") + '">'
+        + (i.passed ? "通过" : "违反") + '</span>'
+        + (i.family ? '<span class="chip ' + (i.passed ? "chip--ok" : "chip--bad") + '">'
+          + esc(i.family) + '</span>' : "")
+        + '</div>').join("");
+  } catch (e) {
+    body.innerHTML = '<div class="err-banner">校验请求失败：' + esc(e.message) + '</div>';
+  }
+}
+
+// ---------- evolve ----------
+async function loadEvolve() {
+  try {
+    const r = await fetch(API + "/api/v1/evolution");
+    const ev = await r.json();
+    const dist = ev.family_distribution || {};
+    const keys = Object.keys(dist);
+    if (!ev.total) {
+      $("#evolve-dist").innerHTML = '<div class="empty"><div class="e-title">近况良好</div>'
+        + '没有触发自进化回路——所有回答均通过了不变量校验。</div>';
+      $("#evolve-eps").innerHTML = '<div class="empty">暂无修复记录。</div>';
+      return;
+    }
+    const max = Math.max(...Object.values(dist));
+    $("#evolve-dist").innerHTML = keys.sort((a, b) => dist[b] - dist[a]).map(k =>
+      '<div class="bar-row"><span class="b-label">' + esc(k) + '</span>'
+      + '<div class="b-track"><div class="b-fill" style="width:' + (dist[k] / max * 100) + '%"></div></div>'
+      + '<span class="b-num">' + dist[k] + '</span></div>').join("");
+    $("#evolve-eps").innerHTML = "<table><thead><tr><th>时间</th><th>家族</th><th>策略</th>"
+      + "<th>结果</th><th>说明</th></tr></thead><tbody>"
+      + ev.episodes.slice().reverse().map(e2 =>
+        "<tr><td class=\"num\">" + new Date(e2.ts * 1000).toLocaleTimeString()
+        + "</td><td>" + esc(e2.family || "-") + "</td><td class=\"mono\" style=\"font-size:12px\">"
+        + esc(e2.strategy) + "</td><td>"
+        + (e2.fixed ? '<span class="st-pass">已闭环</span>' : '<span class="st-fail">未修复</span>')
+        + "</td><td style=\"max-width:220px;overflow:hidden;text-overflow:ellipsis\">"
+        + esc(e2.detail || "") + "</td></tr>").join("")
+      + "</tbody></table>";
+  } catch (e) {
+    $("#evolve-dist").innerHTML = '<div class="err-banner">数据加载失败：' + esc(e.message) + '</div>';
+  }
+}
+
+// ---------- eval ----------
+$("#eval-btn").addEventListener("click", async () => {
+  $("#eval-metrics").innerHTML = '<div class="skeleton" style="min-height:100px"></div>';
+  $("#eval-note").innerHTML = '<div class="hint">评测使用独立索引重灌语料，不影响生产索引。</div>';
+  try {
+    const r = await fetch(API + "/api/v1/eval/run", { method: "POST" });
+    if (!r.ok) throw new Error((await r.json()).detail || r.status);
+    const e = await r.json();
+    const cell = (label, val, fmt) => '<div class="metric"><div class="m-label">' + label
+      + '</div><div class="m-value">' + (fmt ? fmt : val) + '</div></div>';
+    $("#eval-metrics").innerHTML = '<div class="metric-grid">'
+      + cell("NDCG@10", e.ndcg_at_10, e.ndcg_at_10.toFixed(4))
+      + cell("Recall@5", e.recall_at_5, e.recall_at_5.toFixed(4))
+      + cell("MRR", e.mrr, e.mrr.toFixed(4))
+      + cell("用例数", e.n_cases) + '</div>';
+    $("#eval-note").innerHTML = '<div class="hint">数据集 ' + esc(e.dataset)
+      + ' · 耗时 ' + e.duration_ms + ' ms · 离线轨（哈希嵌入）</div>';
+  } catch (e2) {
+    $("#eval-metrics").innerHTML = '<div class="err-banner">评测失败：' + esc(e2.message) + '</div>';
+  }
+});
+</script>
+</body>
+</html>

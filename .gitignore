@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+build/
+dist/
+
+# 运行时数据（模型产物/评测轨迹不进仓库）
+data/
+*.db
+*.jsonl
+
+# 工具与临时
+.pytest-tmp/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+_uv*.log
+_smoke*
+_probe*
+_calib*
+_dbg*
+_pytest*
+_ruff*
+_mypy*
+_verify*
+_imp*
+*.log
+*.exit
+
+# IDE / OS
+.idea/
+.vscode/
+Thumbs.db
+.DS_Store
+
+# Author: 晨星

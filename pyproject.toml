@@ -1,0 +1,51 @@
+[project]
+name = "veritas-ai"
+version = "0.1.0"
+description = "Veritas AI - Invariant-first, self-evolving AI Agent runtime (CPU-only, offline-verifiable)"
+authors = [{ name = "晨星" }]
+readme = "README.md"
+requires-python = ">=3.13"
+license = { text = "Apache-2.0" }
+dependencies = [
+    "fastapi>=0.141.1,<0.142",
+    "uvicorn>=0.53.0,<0.54",
+    "pydantic>=2.13.5,<3",
+    "httpx>=0.28.1,<0.29",
+    "numpy>=2.5.3,<3",
+    "structlog>=26.1.0,<27",
+    "rank-bm25>=0.2.2,<0.3",
+]
+
+[project.optional-dependencies]
+qdrant = ["qdrant-client>=1.19.1,<2"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1,<10",
+    "ruff>=0.16.8,<0.17",
+    "mypy>=2.3.1,<3",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.13"
+ignore_missing_imports = true
+check_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-q"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/veritas"]

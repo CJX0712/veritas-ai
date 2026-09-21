@@ -1,0 +1,17 @@
+services:
+  veritas:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - VERITAS_TRACK=offline   # online = 使用宿主机 Ollama（bge-m3 + qwen2.5:1.5b）
+    volumes:
+      - veritas-data:/app/data
+  # 切换在线轨时取消注释（宿主机需安装 Ollama 并拉取 bge-m3 / qwen2.5:1.5b-instruct）：
+  # environment 追加: VERITAS_TRACK=online, OLLAMA_HOST 指向宿主机
+  # extra_hosts:
+  #   - "host.docker.internal:host-gateway"
+
+volumes:
+  veritas-data:
+# Author: 晨星
