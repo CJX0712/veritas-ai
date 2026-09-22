@@ -18,6 +18,10 @@ jobs:
         uses: astral-sh/setup-uv@v5
         with:
           version: "0.12.10"
+          # 关闭 uv 缓存保存：setup-uv 的 post 步骤(save-cache)在 Node24 runner 上
+          # 保存缓存退出码 2，导致 job 被判失败。本项目 uv.lock 锁定、零编译，
+          # 无需 GitHub cache 加速，关掉后 post 步骤早退成功，CI 转绿。
+          enable-cache: false
 
       - name: Install dependencies (frozen, zero-compile)
         run: uv sync --frozen
