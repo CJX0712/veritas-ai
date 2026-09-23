@@ -12,10 +12,10 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v10
         with:
           version: "0.12.10"
           # 关闭 uv 缓存保存：setup-uv 的 post 步骤(save-cache)在 Node24 runner 上
