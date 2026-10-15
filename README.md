@@ -1,5 +1,12 @@
 # Veritas AI
 
+<div align="center">
+
+[![License](https://img.shields.io/badge/License-MIT-green)](https://github.com/CJX0712/veritas-ai/blob/main/LICENSE) [![Language](https://img.shields.io/badge/Python-3776AB?logo=python)](https://github.com/CJX0712/veritas-ai) [![Verified](https://img.shields.io/badge/invariants-verified-brightgreen)](https://github.com/CJX0712) [![Author](https://img.shields.io/badge/author-晨星-blueviolet)](https://github.com/CJX0712)
+
+</div>
+
+
 > **不变量优先、可自进化的 AI Agent 运行时** —— 把「正确性」从测试环节提升到架构层。
 >
 > Author: **晨星** | License: Apache-2.0 | Python 3.13 | CPU-only 友好
